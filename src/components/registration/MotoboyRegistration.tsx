@@ -16,6 +16,7 @@ export function MotoboyRegistration({ onSuccess }: MotoboyRegistrationProps) {
     name: '',
     cnpj: '',
     phone: '',
+    whatsapp: '',
     email: '',
     vehicleModel: '',
     vehicleYear: '',
@@ -27,7 +28,7 @@ export function MotoboyRegistration({ onSuccess }: MotoboyRegistrationProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.cnpj || !formData.phone) {
+    if (!formData.name || !formData.cnpj || !formData.phone || !formData.whatsapp) {
       toast.error('Preencha todos os campos obrigatórios')
       return
     }
@@ -103,15 +104,25 @@ export function MotoboyRegistration({ onSuccess }: MotoboyRegistrationProps) {
               />
             </div>
             <div>
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="whatsapp">WhatsApp *</Label>
               <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder="seu@email.com"
+                id="whatsapp"
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
+                placeholder="(11) 99999-9999"
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              placeholder="seu@email.com"
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">

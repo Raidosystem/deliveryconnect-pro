@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock } from '@phosphor-icons/react'
+import { MapPin, Package, CurrencyDollar, Clock, Motorcycle } from '@phosphor-icons/react'
 import { LiveMap } from '@/components/map/LiveMap'
+import { ActiveMotoboys } from './ActiveMotoboys'
 
 interface DashboardCommerceProps {
   user: any
@@ -13,6 +14,7 @@ interface DashboardCommerceProps {
 
 export function DashboardCommerce({ user }: DashboardCommerceProps) {
   const [deliveries] = useKV<any[]>('deliveries', [])
+  const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([])
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([])
 
@@ -24,6 +26,70 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
 
   const totalSpent = completedDeliveries.reduce((sum, d) => sum + (d.value || 0), 0)
   const totalDeliveries = completedDeliveries.length
+
+  // Função para criar motoboys de exemplo para testes
+  const createSampleMotoboys = () => {
+    const sampleMotoboys = [
+      {
+        id: Date.now() + 1,
+        type: 'motoboy',
+        name: 'João Silva',
+        cnpj: '12.345.678/0001-91',
+        phone: '(11) 99999-1111',
+        whatsapp: '11999991111',
+        email: 'joao@email.com',
+        vehicleModel: 'Honda CG 160',
+        vehicleYear: '2022',
+        licensePlate: 'ABC-1234',
+        isOnline: true,
+        location: { lat: -23.5505 + (Math.random() - 0.5) * 0.05, lng: -46.6333 + (Math.random() - 0.5) * 0.05 },
+        totalDeliveries: 25,
+        totalEarnings: 375.50,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: Date.now() + 2,
+        type: 'motoboy',
+        name: 'Maria Santos',
+        cnpj: '98.765.432/0001-10',
+        phone: '(11) 99999-2222',
+        whatsapp: '11999992222',
+        email: 'maria@email.com',
+        vehicleModel: 'Yamaha Factor 150',
+        vehicleYear: '2021',
+        licensePlate: 'XYZ-5678',
+        isOnline: true,
+        location: { lat: -23.5505 + (Math.random() - 0.5) * 0.05, lng: -46.6333 + (Math.random() - 0.5) * 0.05 },
+        totalDeliveries: 42,
+        totalEarnings: 630.00,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: Date.now() + 3,
+        type: 'motoboy',
+        name: 'Carlos Oliveira',
+        cnpj: '11.222.333/0001-44',
+        phone: '(11) 99999-3333',
+        whatsapp: '11999993333',
+        email: 'carlos@email.com',
+        vehicleModel: 'Honda Biz 125',
+        vehicleYear: '2020',
+        licensePlate: 'DEF-9012',
+        isOnline: false,
+        location: { lat: -23.5505 + (Math.random() - 0.5) * 0.05, lng: -46.6333 + (Math.random() - 0.5) * 0.05 },
+        totalDeliveries: 18,
+        totalEarnings: 270.00,
+        createdAt: new Date().toISOString()
+      }
+    ]
+
+    setRegisteredUsers((current) => {
+      const existing = current || []
+      const motoboyIds = sampleMotoboys.map(m => m.cnpj)
+      const filtered = existing.filter(u => u.type !== 'motoboy' || !motoboyIds.includes(u.cnpj))
+      return [...filtered, ...sampleMotoboys]
+    })
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -77,12 +143,41 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
         </Card>
       </div>
 
-      <Tabs defaultValue="map" className="space-y-6">
+      <Tabs defaultValue="motoboys" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="motoboys">Motoboys Disponíveis</TabsTrigger>
           <TabsTrigger value="map">Mapa em Tempo Real</TabsTrigger>
           <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="motoboys">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Motorcycle className="w-5 h-5" />
+                    Motoboys Disponíveis
+                  </CardTitle>
+                  <CardDescription>
+                    Entre em contato diretamente com motoboys online próximos à sua localização
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={createSampleMotoboys}
+                >
+                  Dados de Demonstração
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ActiveMotoboys userLocation={user.location} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="map">
           <Card>
