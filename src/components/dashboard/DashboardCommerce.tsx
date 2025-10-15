@@ -4,21 +4,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, Motorcycle, ChatCircle, ClockCounterClockwise } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { MapPin, Package, CurrencyDollar, Clock, Motorcycle, ChatCircle, ClockCounterClockwise, Plus } from '@phosphor-icons/react'
 import { LiveMap } from '@/components/map/LiveMap'
 import { ActiveMotoboys } from './ActiveMotoboys'
 import { MessagesTab } from './MessagesTab'
 import { ChatHistory } from '@/components/chat/ChatHistory'
+import { QRCodeDisplay } from '@/components/delivery/QRCodeDisplay'
+import { DeliveryTracking } from '@/components/delivery/DeliveryTracking'
+import { toast } from 'sonner'
 
 interface DashboardCommerceProps {
   user: any
 }
 
 export function DashboardCommerce({ user }: DashboardCommerceProps) {
-  const [deliveries] = useKV<any[]>('deliveries', [])
+  const [deliveries, setDeliveries] = useKV<any[]>('deliveries', [])
   const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([])
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([])
+  const [showNewDeliveryDialog, setShowNewDeliveryDialog] = useState(false)
+  const [newDeliveryData, setNewDeliveryData] = useState({
+    address: '',
+    value: '',
+    description: ''
+  })
 
   useEffect(() => {
     const userDeliveries = deliveries?.filter(d => d.commerceId === user.id) || []
@@ -29,7 +41,37 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
   const totalSpent = completedDeliveries.reduce((sum, d) => sum + (d.value || 0), 0)
   const totalDeliveries = completedDeliveries.length
 
-  // Função para criar motoboys de exemplo para testes
+  const createNewDelivery = () => {
+    if (!newDeliveryData.address || !newDeliveryData.value) {
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    const deliveryId = `DEL-${Date.now()}`
+    const newDelivery = {
+      id: deliveryId,
+      commerceId: user.id,
+      commerceName: user.businessName,
+      address: newDeliveryData.address,
+      description: newDeliveryData.description,
+      value: parseFloat(newDeliveryData.value),
+      motoboyEarning: parseFloat(newDeliveryData.value) * 0.7,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }
+
+    setDeliveries((current) => [...(current || []), newDelivery])
+    
+    toast.success('Entrega criada! Mostre o QR Code para o motoboy')
+    setShowNewDeliveryDialog(false)
+    setNewDeliveryData({ address: '', value: '', description: '' })
+  }
+
+  const getMotoboyLocation = (motoboyId: string) => {
+    const motoboy = registeredUsers?.find(u => u.id === motoboyId)
+    return motoboy?.location
+  }
+
   const createSampleMotoboys = () => {
     const sampleMotoboys = [
       {
@@ -148,6 +190,11 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
       <Tabs defaultValue="motoboys" className="space-y-6">
         <TabsList>
           <TabsTrigger value="motoboys">Motoboys Disponíveis</TabsTrigger>
+          <TabsTrigger value="active">
+            <Package className="w-4 h-4 mr-2" />
+            Minhas Entregas
+          </TabsTrigger>
+          <TabsTrigger value="map">Mapa em Tempo Real</TabsTrigger>
           <TabsTrigger value="messages">
             <ChatCircle className="w-4 h-4 mr-2" />
             Mensagens
@@ -156,8 +203,6 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
             <ClockCounterClockwise className="w-4 h-4 mr-2" />
             Histórico de Chat
           </TabsTrigger>
-          <TabsTrigger value="map">Mapa em Tempo Real</TabsTrigger>
-          <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 
@@ -229,32 +274,89 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
 
         <TabsContent value="active">
           <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Minhas Entregas</h3>
+              <Dialog open={showNewDeliveryDialog} onOpenChange={setShowNewDeliveryDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nova Entrega
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Criar Nova Entrega</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados da entrega e gere um QR Code para o motoboy
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="address">Endereço de Entrega *</Label>
+                      <Input
+                        id="address"
+                        placeholder="Rua, número, bairro, cidade"
+                        value={newDeliveryData.address}
+                        onChange={(e) => setNewDeliveryData({ ...newDeliveryData, address: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="value">Valor da Entrega (R$) *</Label>
+                      <Input
+                        id="value"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={newDeliveryData.value}
+                        onChange={(e) => setNewDeliveryData({ ...newDeliveryData, value: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Descrição</Label>
+                      <Input
+                        id="description"
+                        placeholder="Detalhes do pedido"
+                        value={newDeliveryData.description}
+                        onChange={(e) => setNewDeliveryData({ ...newDeliveryData, description: e.target.value })}
+                      />
+                    </div>
+                    <Button onClick={createNewDelivery} className="w-full">
+                      Criar Entrega
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
             {activeDeliveries.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma entrega ativa</h3>
-                  <p className="text-muted-foreground">Suas entregas aparecerão aqui quando solicitadas</p>
+                  <p className="text-muted-foreground mb-4">
+                    Clique em "Nova Entrega" para criar sua primeira entrega
+                  </p>
+                  <Button onClick={() => setShowNewDeliveryDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Entrega
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
               activeDeliveries.map((delivery) => (
-                <Card key={delivery.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">Entrega #{delivery.id}</h3>
-                        <p className="text-sm text-muted-foreground">{delivery.address}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant={delivery.status === 'in_progress' ? 'default' : 'secondary'}>
-                          {delivery.status === 'in_progress' ? 'Em andamento' : 'Aguardando'}
-                        </Badge>
-                        <p className="text-sm font-medium">R$ {delivery.value?.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div key={delivery.id} className="grid md:grid-cols-2 gap-4">
+                  <QRCodeDisplay
+                    deliveryId={delivery.id}
+                    commerceName={user.businessName}
+                    address={delivery.address}
+                    value={delivery.value}
+                    status={delivery.status}
+                  />
+                  <DeliveryTracking
+                    delivery={delivery}
+                    motoboyLocation={delivery.motoboyId ? getMotoboyLocation(delivery.motoboyId) : undefined}
+                  />
+                </div>
               ))
             )}
           </div>

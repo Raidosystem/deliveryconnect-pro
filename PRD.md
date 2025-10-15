@@ -47,6 +47,20 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Progression**: Abrir histórico → Aplicar filtros (data/tipo) → Buscar por texto → Ver conversas agrupadas → Clicar em conversa específica → Ver detalhes completos
 - **Success criteria**: Busca instantânea retorna resultados relevantes, filtros funcionam corretamente, todas as mensagens são recuperáveis e navegáveis
 
+### Sistema de QR Code para Autorização de Coleta
+- **Functionality**: Geração de QR Code para cada entrega e scanner de câmera para motoboys autorizarem coleta
+- **Purpose**: Garantir segurança e rastreabilidade do momento exato da coleta do pedido
+- **Trigger**: Comerciante cria nova entrega → QR Code gerado automaticamente / Motoboy clica em "Escanear QR Code"
+- **Progression**: Comerciante cria entrega → QR Code exibido → Motoboy abre scanner → Aponta câmera → Código lido → Entrega autorizada → Rastreamento ativado automaticamente
+- **Success criteria**: QR Code gerado instantaneamente, scanner funciona em dispositivos móveis, autorização registrada com timestamp, rastreamento iniciado automaticamente
+
+### Rastreamento em Tempo Real Pós-Coleta
+- **Functionality**: Visualização automática da localização do motoboy após escaneamento do QR Code
+- **Purpose**: Permitir que comerciante acompanhe a entrega desde a coleta até a finalização
+- **Trigger**: Motoboy escaneia QR Code com sucesso
+- **Progression**: QR escaneado → Status muda para "coletado" → Após 2s muda para "em rota" → Localização GPS atualiza a cada 5s → Comerciante vê no mapa em tempo real → Timeline de progresso atualizada
+- **Success criteria**: Comerciante visualiza localização do motoboy em tempo real, interface mostra distância estimada, timeline de progresso clara e intuitiva
+
 ### Rastreamento em Tempo Real
 - **Functionality**: Visualização da localização do motoboy durante a entrega
 - **Purpose**: Transparência e controle para comerciante e cliente final
@@ -80,6 +94,11 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Usuário offline durante conversa**: Mensagens armazenadas e entregues quando retornar online
 - **Busca sem resultados**: Sugestões de ajuste de filtros e indicação clara de ausência de mensagens
 - **Grande volume de mensagens**: Paginação e scroll infinito para performance otimizada
+- **Câmera não disponível**: Detecção de permissões e instruções claras para habilitar acesso
+- **QR Code inválido**: Validação e mensagem clara de erro
+- **Coleta duplicada**: Verificação de status para prevenir escaneamento múltiplo
+- **GPS desabilitado durante entrega**: Fallback para última localização conhecida com aviso visual
+- **Perda de conexão durante rastreamento**: Modo offline com última posição e estimativa de tempo
 
 ## Design Direction
 
@@ -117,9 +136,9 @@ Animações sutis que reforçam ações do usuário sem atrasar o fluxo, especia
 
 ## Component Selection
 
-- **Components**: Card para perfis de motoboy, Dialog para confirmações de pagamento e chat, Form para cadastros, Badge para status e contadores de notificações, Table para relatórios financeiros, Popover para centro de notificações, ScrollArea para lista de mensagens, Tabs para organização de histórico de conversas, Input com ícone de busca para pesquisa de mensagens
-- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow, NotificationCenter com badges dinâmicos, ChatDialog com interface de mensagens instantâneas, ChatHistory com busca avançada e filtros, sistema de highlight para resultados de busca
-- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real, indicadores visuais de mensagens não lidas, badges de contagem de notificações, filtros ativos visualmente distintos, mensagens destacadas quando encontradas na busca
-- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores, ChatCircle para mensagens, Bell para notificações, ClockCounterClockwise para histórico, MagnifyingGlass para busca, Funnel para filtros, CalendarBlank para filtros de data
+- **Components**: Card para perfis de motoboy e exibição de entregas, Dialog para confirmações de pagamento e chat, Form para cadastros, Badge para status e contadores de notificações, Table para relatórios financeiros, Popover para centro de notificações, ScrollArea para lista de mensagens, Tabs para organização de histórico de conversas, Input com ícone de busca para pesquisa de mensagens, QRCodeSVG para geração de códigos, Video e Canvas para scanner de câmera
+- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow, NotificationCenter com badges dinâmicos, ChatDialog com interface de mensagens instantâneas, ChatHistory com busca avançada e filtros, sistema de highlight para resultados de busca, QRCodeDisplay para mostrar código ao comerciante, QRCodeScanner com acesso à câmera e detecção jsQR, DeliveryTracking com timeline de progresso e localização em tempo real
+- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real, indicadores visuais de mensagens não lidas, badges de contagem de notificações, filtros ativos visualmente distintos, mensagens destacadas quando encontradas na busca, QR Code com estados (aguardando/coletado/em rota), scanner com estados (inativo/permissão negada/escaneando), timeline de entrega com indicadores visuais de progresso
+- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores, ChatCircle para mensagens, Bell para notificações, ClockCounterClockwise para histórico, MagnifyingGlass para busca, Funnel para filtros, CalendarBlank para filtros de data, QrCode para scanner, Camera para acesso à câmera, CheckCircle para confirmações, Package para entregas
 - **Spacing**: Sistema 4px base (4, 8, 16, 24, 32px) para consistência visual
-- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis, chat em dialog fullscreen no mobile, histórico de conversas em layout vertical adaptativo
+- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis, chat em dialog fullscreen no mobile, histórico de conversas em layout vertical adaptativo, QR Code dimensionado para telas pequenas, scanner fullscreen em mobile com controles grandes

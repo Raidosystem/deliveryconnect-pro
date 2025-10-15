@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle, ClockCounterClockwise } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle, ClockCounterClockwise, QrCode } from '@phosphor-icons/react'
 import { MessagesTab } from './MessagesTab'
 import { ChatHistory } from '@/components/chat/ChatHistory'
+import { QRCodeScanner } from '@/components/delivery/QRCodeScanner'
+import { toast } from 'sonner'
 
 interface DashboardMotoboyProps {
   user: any
@@ -15,11 +18,12 @@ interface DashboardMotoboyProps {
 
 export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
   const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
-  const [deliveries] = useKV<any[]>('deliveries', [])
+  const [deliveries, setDeliveries] = useKV<any[]>('deliveries', [])
   const [isOnline, setIsOnline] = useState(user.isOnline || false)
   const [myDeliveries, setMyDeliveries] = useState<any[]>([])
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([])
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([])
+  const [showQRScanner, setShowQRScanner] = useState(false)
 
   useEffect(() => {
     const userDeliveries = deliveries?.filter(d => d.motoboyId === user.id) || []
@@ -63,6 +67,66 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
     }
   }, [isOnline])
 
+  const handleQRScan = (data: any) => {
+    try {
+      const { deliveryId, commerceName, address, value } = data
+      
+      setDeliveries((current) => {
+        const deliveryIndex = (current || []).findIndex(d => d.id === deliveryId)
+        
+        if (deliveryIndex === -1) {
+          toast.error('Entrega não encontrada')
+          return current || []
+        }
+
+        const delivery = (current || [])[deliveryIndex]
+        
+        if (delivery.status !== 'pending') {
+          toast.error('Esta entrega já foi coletada')
+          return current || []
+        }
+
+        const updatedDeliveries = [...(current || [])]
+        updatedDeliveries[deliveryIndex] = {
+          ...delivery,
+          status: 'collected',
+          motoboyId: user.id,
+          motoboyName: user.name,
+          motoboyPhone: user.phone,
+          collectedAt: new Date().toISOString(),
+          estimatedArrival: new Date(Date.now() + 30 * 60000).toLocaleTimeString()
+        }
+
+        setTimeout(() => {
+          setDeliveries((current) => {
+            const idx = (current || []).findIndex(d => d.id === deliveryId)
+            if (idx !== -1) {
+              const updated = [...(current || [])]
+              updated[idx] = { ...updated[idx], status: 'in_progress' }
+              return updated
+            }
+            return current || []
+          })
+        }, 2000)
+
+        toast.success(`Entrega coletada! Pedido de ${commerceName}`)
+        setShowQRScanner(false)
+        return updatedDeliveries
+      })
+
+      setRegisteredUsers((current) => 
+        (current || []).map(u => 
+          u.id === user.id 
+            ? { ...u, totalDeliveries: (u.totalDeliveries || 0) + 1 } 
+            : u
+        )
+      )
+    } catch (error) {
+      toast.error('Erro ao processar QR Code')
+      console.error('Erro ao processar QR Code:', error)
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -72,6 +136,14 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
             <p className="text-muted-foreground">Controle suas entregas e ganhos</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => setShowQRScanner(true)}
+              size="lg"
+              className="gap-2"
+            >
+              <QrCode className="w-5 h-5" />
+              Escanear QR Code
+            </Button>
             <span className="text-sm font-medium">
               {isOnline ? 'Online' : 'Offline'}
             </span>
@@ -306,6 +378,21 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showQRScanner} onOpenChange={setShowQRScanner}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Escanear QR Code da Entrega</DialogTitle>
+            <DialogDescription>
+              Aponte a câmera para o código QR do comerciante para autorizar a coleta
+            </DialogDescription>
+          </DialogHeader>
+          <QRCodeScanner 
+            onScan={handleQRScan} 
+            onClose={() => setShowQRScanner(false)} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
