@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, Motorcycle, ChatCircle } from '@phosphor-icons/react'
+import { MapPin, Package, CurrencyDollar, Clock, Motorcycle, ChatCircle, ClockCounterClockwise } from '@phosphor-icons/react'
 import { LiveMap } from '@/components/map/LiveMap'
 import { ActiveMotoboys } from './ActiveMotoboys'
 import { MessagesTab } from './MessagesTab'
+import { ChatHistory } from '@/components/chat/ChatHistory'
 
 interface DashboardCommerceProps {
   user: any
@@ -151,6 +152,10 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
             <ChatCircle className="w-4 h-4 mr-2" />
             Mensagens
           </TabsTrigger>
+          <TabsTrigger value="chat-history">
+            <ClockCounterClockwise className="w-4 h-4 mr-2" />
+            Histórico de Chat
+          </TabsTrigger>
           <TabsTrigger value="map">Mapa em Tempo Real</TabsTrigger>
           <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
@@ -199,6 +204,10 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
               <MessagesTab currentUser={user} currentUserType="commerce" />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="chat-history">
+          <ChatHistory currentUser={user} currentUserType="commerce" />
         </TabsContent>
 
         <TabsContent value="map">

@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle } from '@phosphor-icons/react'
+import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle, ClockCounterClockwise } from '@phosphor-icons/react'
 import { MessagesTab } from './MessagesTab'
+import { ChatHistory } from '@/components/chat/ChatHistory'
 
 interface DashboardMotoboyProps {
   user: any
@@ -142,6 +143,10 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
             <ChatCircle className="w-4 h-4 mr-2" />
             Mensagens
           </TabsTrigger>
+          <TabsTrigger value="chat-history">
+            <ClockCounterClockwise className="w-4 h-4 mr-2" />
+            Histórico de Chat
+          </TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="earnings">Ganhos Detalhados</TabsTrigger>
         </TabsList>
@@ -202,6 +207,10 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
               <MessagesTab currentUser={user} currentUserType="motoboy" />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="chat-history">
+          <ChatHistory currentUser={user} currentUserType="motoboy" />
         </TabsContent>
 
         <TabsContent value="history">

@@ -40,6 +40,13 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Progression**: Abrir chat → Digitar mensagem → Enviar → Notificação para destinatário → Mensagem exibida → Confirmação de leitura
 - **Success criteria**: Mensagens entregues instantaneamente com indicadores de não lidas e histórico completo
 
+### Histórico de Conversas com Busca
+- **Functionality**: Sistema completo de histórico de mensagens com busca avançada, filtros por data e tipo de usuário
+- **Purpose**: Permitir que usuários encontrem mensagens antigas rapidamente e revisitem conversas anteriores
+- **Trigger**: Usuário acessa aba "Histórico de Chat" no dashboard
+- **Progression**: Abrir histórico → Aplicar filtros (data/tipo) → Buscar por texto → Ver conversas agrupadas → Clicar em conversa específica → Ver detalhes completos
+- **Success criteria**: Busca instantânea retorna resultados relevantes, filtros funcionam corretamente, todas as mensagens são recuperáveis e navegáveis
+
 ### Rastreamento em Tempo Real
 - **Functionality**: Visualização da localização do motoboy durante a entrega
 - **Purpose**: Transparência e controle para comerciante e cliente final
@@ -71,6 +78,8 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Mensagem não entregue**: Armazenamento local e retry automático quando conexão restaurada
 - **Notificações perdidas**: Sistema de sincronização que recupera notificações não visualizadas
 - **Usuário offline durante conversa**: Mensagens armazenadas e entregues quando retornar online
+- **Busca sem resultados**: Sugestões de ajuste de filtros e indicação clara de ausência de mensagens
+- **Grande volume de mensagens**: Paginação e scroll infinito para performance otimizada
 
 ## Design Direction
 
@@ -108,9 +117,9 @@ Animações sutis que reforçam ações do usuário sem atrasar o fluxo, especia
 
 ## Component Selection
 
-- **Components**: Card para perfis de motoboy, Dialog para confirmações de pagamento e chat, Form para cadastros, Badge para status e contadores de notificações, Table para relatórios financeiros, Popover para centro de notificações, ScrollArea para lista de mensagens
-- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow, NotificationCenter com badges dinâmicos, ChatDialog com interface de mensagens instantâneas
-- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real, indicadores visuais de mensagens não lidas, badges de contagem de notificações
-- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores, ChatCircle para mensagens, Bell para notificações
+- **Components**: Card para perfis de motoboy, Dialog para confirmações de pagamento e chat, Form para cadastros, Badge para status e contadores de notificações, Table para relatórios financeiros, Popover para centro de notificações, ScrollArea para lista de mensagens, Tabs para organização de histórico de conversas, Input com ícone de busca para pesquisa de mensagens
+- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow, NotificationCenter com badges dinâmicos, ChatDialog com interface de mensagens instantâneas, ChatHistory com busca avançada e filtros, sistema de highlight para resultados de busca
+- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real, indicadores visuais de mensagens não lidas, badges de contagem de notificações, filtros ativos visualmente distintos, mensagens destacadas quando encontradas na busca
+- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores, ChatCircle para mensagens, Bell para notificações, ClockCounterClockwise para histórico, MagnifyingGlass para busca, Funnel para filtros, CalendarBlank para filtros de data
 - **Spacing**: Sistema 4px base (4, 8, 16, 24, 32px) para consistência visual
-- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis, chat em dialog fullscreen no mobile
+- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis, chat em dialog fullscreen no mobile, histórico de conversas em layout vertical adaptativo
