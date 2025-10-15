@@ -243,14 +243,9 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
             <ChatCircle className="w-4 h-4 mr-2" />
             Mensagens
           </TabsTrigger>
-          <TabsTrigger value="chat-history">
-            <ClockCounterClockwise className="w-4 h-4 mr-2" />
-            Histórico de Chat
-          </TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="earnings">Ganhos Detalhados</TabsTrigger>
         </TabsList>
-
         <TabsContent value="active">
           <div className="space-y-4">
             {activeDeliveries.length === 0 ? (
@@ -258,12 +253,7 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
                 <CardContent className="p-8 text-center">
                   <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Nenhuma entrega ativa</h3>
-                  <p className="text-muted-foreground">
-                    {isOnline 
-                      ? 'Aguarde novas entregas chegarem' 
-                      : 'Ative o modo online para receber entregas'
-                    }
-                  </p>
+                  <p className="text-muted-foreground">Quando você aceitar entregas, elas aparecerão aqui</p>
                 </CardContent>
               </Card>
             ) : (
