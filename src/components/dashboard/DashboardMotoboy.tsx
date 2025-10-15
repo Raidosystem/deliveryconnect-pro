@@ -67,6 +67,34 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
     }
   }, [isOnline])
 
+  const handleCompleteDelivery = (deliveryId: string) => {
+    setDeliveries((current) => {
+      const deliveryIndex = (current || []).findIndex(d => d.id === deliveryId)
+      
+      if (deliveryIndex === -1) {
+        toast.error('Entrega não encontrada')
+        return current || []
+      }
+
+      const delivery = (current || [])[deliveryIndex]
+      
+      if (delivery.status !== 'in_progress') {
+        toast.error('Esta entrega não está em andamento')
+        return current || []
+      }
+
+      const updatedDeliveries = [...(current || [])]
+      updatedDeliveries[deliveryIndex] = {
+        ...delivery,
+        status: 'completed',
+        completedAt: new Date().toISOString()
+      }
+
+      toast.success('Entrega concluída com sucesso!')
+      return updatedDeliveries
+    })
+  }
+
   const handleQRScan = (data: any) => {
     try {
       const { deliveryId, commerceName, address, value } = data
@@ -242,19 +270,27 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
               activeDeliveries.map((delivery) => (
                 <Card key={delivery.id}>
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
                         <h3 className="font-semibold">Entrega #{delivery.id}</h3>
                         <p className="text-sm text-muted-foreground">{delivery.address}</p>
                         <p className="text-xs text-muted-foreground">
                           Iniciada em {new Date(delivery.startedAt).toLocaleString()}
                         </p>
                       </div>
-                      <div className="text-right">
+                      <div className="flex flex-col items-end gap-2">
                         <Badge variant="default">Em andamento</Badge>
                         <p className="text-sm font-medium text-green-600">
                           +R$ {delivery.motoboyEarning?.toFixed(2)}
                         </p>
+                        <Button 
+                          size="sm"
+                          onClick={() => handleCompleteDelivery(delivery.id)}
+                          className="gap-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Concluir Entrega
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
