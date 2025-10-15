@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, CheckCircle } from '@phosphor-icons/react'
+import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle } from '@phosphor-icons/react'
+import { MessagesTab } from './MessagesTab'
 
 interface DashboardMotoboyProps {
   user: any
@@ -137,6 +138,10 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
       <Tabs defaultValue="active" className="space-y-6">
         <TabsList>
           <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
+          <TabsTrigger value="messages">
+            <ChatCircle className="w-4 h-4 mr-2" />
+            Mensagens
+          </TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="earnings">Ganhos Detalhados</TabsTrigger>
         </TabsList>
@@ -180,6 +185,23 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
               ))
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="messages">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ChatCircle className="w-5 h-5" />
+                Mensagens
+              </CardTitle>
+              <CardDescription>
+                Converse com comerciantes e outros motoboys
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MessagesTab currentUser={user} currentUserType="motoboy" />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="history">

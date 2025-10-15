@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MapPin, Package, CurrencyDollar, Clock, Motorcycle } from '@phosphor-icons/react'
+import { MapPin, Package, CurrencyDollar, Clock, Motorcycle, ChatCircle } from '@phosphor-icons/react'
 import { LiveMap } from '@/components/map/LiveMap'
 import { ActiveMotoboys } from './ActiveMotoboys'
+import { MessagesTab } from './MessagesTab'
 
 interface DashboardCommerceProps {
   user: any
@@ -146,6 +147,10 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
       <Tabs defaultValue="motoboys" className="space-y-6">
         <TabsList>
           <TabsTrigger value="motoboys">Motoboys Disponíveis</TabsTrigger>
+          <TabsTrigger value="messages">
+            <ChatCircle className="w-4 h-4 mr-2" />
+            Mensagens
+          </TabsTrigger>
           <TabsTrigger value="map">Mapa em Tempo Real</TabsTrigger>
           <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
@@ -174,7 +179,24 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <ActiveMotoboys userLocation={user.location} />
+              <ActiveMotoboys userLocation={user.location} currentUser={user} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="messages">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ChatCircle className="w-5 h-5" />
+                Mensagens
+              </CardTitle>
+              <CardDescription>
+                Converse com motoboys e outros comerciantes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MessagesTab currentUser={user} currentUserType="commerce" />
             </CardContent>
           </Card>
         </TabsContent>

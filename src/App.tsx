@@ -12,6 +12,7 @@ import { MotoboyRegistration } from '@/components/registration/MotoboyRegistrati
 import { DashboardCommerce } from '@/components/dashboard/DashboardCommerce'
 import { DashboardMotoboy } from '@/components/dashboard/DashboardMotoboy'
 import { LiveMap } from '@/components/map/LiveMap'
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 
 type UserType = 'commerce' | 'motoboy' | null
 type ViewState = 'login' | 'register' | 'dashboard'
@@ -52,6 +53,10 @@ function App() {
               <h1 className="text-xl font-bold text-foreground">DeliveryConnect</h1>
             </div>
             <div className="flex items-center gap-4">
+              <NotificationCenter 
+                userId={currentUser.id} 
+                userType={userType as 'commerce' | 'motoboy'} 
+              />
               <Badge variant="secondary" className="hidden sm:flex">
                 {userType === 'commerce' ? 'Comerciante' : 'Motoboy'}
               </Badge>

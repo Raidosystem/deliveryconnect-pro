@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { WhatsappLogo, Motorcycle, MapPin, Star } from '@phosphor-icons/react'
+import { ChatDialog } from '@/components/notifications/ChatDialog'
 
 interface ActiveMotoboysProps {
   userLocation?: { lat: number; lng: number }
+  currentUser?: any
 }
 
-export function ActiveMotoboys({ userLocation }: ActiveMotoboysProps) {
+export function ActiveMotoboys({ userLocation, currentUser }: ActiveMotoboysProps) {
   const [registeredUsers] = useKV<any[]>('registered-users', [])
   const [activeMotoboys, setActiveMotoboys] = useState<any[]>([])
 
@@ -146,6 +148,17 @@ export function ActiveMotoboys({ userLocation }: ActiveMotoboysProps) {
                 </div>
                 
                 <div className="flex flex-col gap-2">
+                  {currentUser && (
+                    <ChatDialog
+                      currentUserId={currentUser.id}
+                      currentUserName={currentUser.businessName || currentUser.name}
+                      currentUserType="commerce"
+                      targetUserId={motoboy.id}
+                      targetUserName={motoboy.name}
+                      targetUserType="motoboy"
+                    />
+                  )}
+                  
                   <Button
                     onClick={() => openWhatsApp(motoboy.whatsapp, motoboy.name)}
                     className="bg-green-600 hover:bg-green-700 text-white"

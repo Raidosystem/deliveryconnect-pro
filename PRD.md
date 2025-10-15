@@ -26,6 +26,20 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Progression**: Formulário dados → Upload documentos → Ativação GPS → Dashboard motoboy
 - **Success criteria**: Motoboy aparece no mapa para comerciantes quando online
 
+### Sistema de Notificações em Tempo Real
+- **Functionality**: Centro de notificações com alertas visuais e sonoros para novas mensagens e eventos
+- **Purpose**: Manter usuários informados instantaneamente sobre mensagens, entregas e pagamentos
+- **Trigger**: Nova mensagem recebida, mudança de status de entrega, ou pagamento processado
+- **Progression**: Evento ocorre → Notificação criada → Toast exibido → Som reproduzido → Badge atualizado → Centro de notificações atualizado
+- **Success criteria**: Usuários recebem notificações instantâneas com contador de não lidas e podem gerenciar notificações
+
+### Sistema de Mensagens/Chat
+- **Functionality**: Chat em tempo real entre comerciantes e motoboys com interface de conversação
+- **Purpose**: Facilitar comunicação direta entre partes para coordenar entregas
+- **Trigger**: Usuário clica em "Mensagem" no perfil de outro usuário ou acessa aba de Mensagens
+- **Progression**: Abrir chat → Digitar mensagem → Enviar → Notificação para destinatário → Mensagem exibida → Confirmação de leitura
+- **Success criteria**: Mensagens entregues instantaneamente com indicadores de não lidas e histórico completo
+
 ### Rastreamento em Tempo Real
 - **Functionality**: Visualização da localização do motoboy durante a entrega
 - **Purpose**: Transparência e controle para comerciante e cliente final
@@ -54,6 +68,9 @@ Plataforma digital que conecta comerciantes a motoboys para entregas sob demanda
 - **Motoboy cancela entrega**: Redistribuição automática para outros entregadores disponíveis
 - **Dados inválidos no cadastro**: Validação em tempo real com sugestões de correção
 - **Múltiplas entregas simultâneas**: Queue system com priorização por proximidade
+- **Mensagem não entregue**: Armazenamento local e retry automático quando conexão restaurada
+- **Notificações perdidas**: Sistema de sincronização que recupera notificações não visualizadas
+- **Usuário offline durante conversa**: Mensagens armazenadas e entregues quando retornar online
 
 ## Design Direction
 
@@ -91,9 +108,9 @@ Animações sutis que reforçam ações do usuário sem atrasar o fluxo, especia
 
 ## Component Selection
 
-- **Components**: Card para perfis de motoboy, Dialog para confirmações de pagamento, Form para cadastros, Badge para status, Table para relatórios financeiros
-- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow
-- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real
-- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores
+- **Components**: Card para perfis de motoboy, Dialog para confirmações de pagamento e chat, Form para cadastros, Badge para status e contadores de notificações, Table para relatórios financeiros, Popover para centro de notificações, ScrollArea para lista de mensagens
+- **Customizations**: MapView component customizado, RealtimeTracker, PaymentFlow, NotificationCenter com badges dinâmicos, ChatDialog com interface de mensagens instantâneas
+- **States**: Botões com estados de loading para pagamentos, inputs com validação em tempo real, indicadores visuais de mensagens não lidas, badges de contagem de notificações
+- **Icon Selection**: Phosphor icons - MapPin para localização, CreditCard para pagamentos, Motorcycle para entregadores, ChatCircle para mensagens, Bell para notificações
 - **Spacing**: Sistema 4px base (4, 8, 16, 24, 32px) para consistência visual
-- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis
+- **Mobile**: Layout responsivo com prioridade mobile-first, mapas ocupando 70% da tela em dispositivos móveis, chat em dialog fullscreen no mobile
