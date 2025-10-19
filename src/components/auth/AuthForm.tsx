@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { toast } from 'sonner'
 
 interface AuthFormProps {
@@ -12,7 +12,7 @@ interface AuthFormProps {
 export function AuthForm({ onLogin }: AuthFormProps) {
   const [cnpj, setCnpj] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [registeredUsers] = useKV<any[]>('registered-users', [])
+  const [registeredUsers] = useLocalStorage<any[]>('registered-users', [])
 
   const handleLogin = async () => {
     if (!cnpj.trim()) {

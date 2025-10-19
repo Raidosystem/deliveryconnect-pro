@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,8 +21,8 @@ interface DashboardCommerceProps {
 }
 
 export function DashboardCommerce({ user }: DashboardCommerceProps) {
-  const [deliveries, setDeliveries] = useKV<any[]>('deliveries', [])
-  const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
+  const [deliveries, setDeliveries] = useLocalStorage<any[]>('deliveries', [])
+  const [registeredUsers, setRegisteredUsers] = useLocalStorage<any[]>('registered-users', [])
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([])
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([])
   const [showNewDeliveryDialog, setShowNewDeliveryDialog] = useState(false)
@@ -355,6 +355,7 @@ export function DashboardCommerce({ user }: DashboardCommerceProps) {
                   <DeliveryTracking
                     delivery={delivery}
                     motoboyLocation={delivery.motoboyId ? getMotoboyLocation(delivery.motoboyId) : undefined}
+                    commerceLocation={user.location}
                   />
                 </div>
               ))

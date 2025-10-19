@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +18,7 @@ type UserType = 'commerce' | 'motoboy' | null
 type ViewState = 'login' | 'register' | 'dashboard'
 
 function App() {
-  const [currentUser, setCurrentUser] = useKV<any>('current-user', null)
+  const [currentUser, setCurrentUser] = useLocalStorage<any>('current-user', null)
   const [userType, setUserType] = useState<UserType>(null)
   const [viewState, setViewState] = useState<ViewState>('login')
   const [registrationType, setRegistrationType] = useState<'commerce' | 'motoboy' | null>(null)

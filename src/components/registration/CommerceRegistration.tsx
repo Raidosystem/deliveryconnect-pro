@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { toast } from 'sonner'
 import { Storefront } from '@phosphor-icons/react'
 
@@ -21,7 +21,7 @@ export function CommerceRegistration({ onSuccess }: CommerceRegistrationProps) {
     email: ''
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
+  const [registeredUsers, setRegisteredUsers] = useLocalStorage<any[]>('registered-users', [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

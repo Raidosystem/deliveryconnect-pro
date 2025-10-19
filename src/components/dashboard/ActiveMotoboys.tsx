@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,7 @@ interface ActiveMotoboysProps {
 }
 
 export function ActiveMotoboys({ userLocation, currentUser }: ActiveMotoboysProps) {
-  const [registeredUsers] = useKV<any[]>('registered-users', [])
+  const [registeredUsers] = useLocalStorage<any[]>('registered-users', [])
   const [activeMotoboys, setActiveMotoboys] = useState<any[]>([])
 
   useEffect(() => {

@@ -13,18 +13,60 @@ interface DeliveryTrackingProps {
     collectedAt?: string
     estimatedArrival?: string
   }
-  motoboyLocation?: { lat: number; lng: number }
+  motoboyLocation?: { 
+    lat: number
+    lng: number
+    accuracy?: number
+    timestamp?: number
+  }
+  commerceLocation?: { lat: number; lng: number }
 }
 
-export function DeliveryTracking({ delivery, motoboyLocation }: DeliveryTrackingProps) {
+export function DeliveryTracking({ delivery, motoboyLocation, commerceLocation }: DeliveryTrackingProps) {
   const [distance, setDistance] = useState<string>('Calculando...')
+  const [lastUpdate, setLastUpdate] = useState<string>('Aguardando...')
+
+  // Calcular distância real entre duas coordenadas usando fórmula de Haversine
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371 // Raio da Terra em km
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLng = (lng2 - lng1) * Math.PI / 180
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng/2) * Math.sin(dLng/2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+    return R * c
+  }
 
   useEffect(() => {
-    if (motoboyLocation) {
-      const dist = (Math.random() * 5).toFixed(1)
-      setDistance(`${dist} km`)
+    if (motoboyLocation && commerceLocation) {
+      const dist = calculateDistance(
+        commerceLocation.lat,
+        commerceLocation.lng,
+        motoboyLocation.lat,
+        motoboyLocation.lng
+      )
+      
+      if (dist < 1) {
+        setDistance(`${Math.round(dist * 1000)}m`)
+      } else {
+        setDistance(`${dist.toFixed(1)} km`)
+      }
+
+      // Atualizar timestamp
+      if (motoboyLocation.timestamp) {
+        const secondsAgo = Math.floor((Date.now() - motoboyLocation.timestamp) / 1000)
+        if (secondsAgo < 10) {
+          setLastUpdate('Agora mesmo')
+        } else if (secondsAgo < 60) {
+          setLastUpdate(`${secondsAgo}s atrás`)
+        } else {
+          setLastUpdate(`${Math.floor(secondsAgo / 60)}min atrás`)
+        }
+      }
     }
-  }, [motoboyLocation])
+  }, [motoboyLocation, commerceLocation])
 
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -170,16 +212,31 @@ export function DeliveryTracking({ delivery, motoboyLocation }: DeliveryTracking
 
         {delivery.status === 'in_progress' && motoboyLocation && (
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <p className="text-sm font-medium">Localização Atual</p>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary animate-pulse" />
+                <p className="text-sm font-medium">Localização GPS em Tempo Real</p>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                {lastUpdate}
+              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Lat: {motoboyLocation.lat.toFixed(6)}, Lng: {motoboyLocation.lng.toFixed(6)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Atualizado em tempo real
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                📍 Lat: {motoboyLocation.lat.toFixed(6)}, Lng: {motoboyLocation.lng.toFixed(6)}
+              </p>
+              {motoboyLocation.accuracy && (
+                <p className="text-xs text-muted-foreground">
+                  🎯 Precisão: {Math.round(motoboyLocation.accuracy)}m
+                </p>
+              )}
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <p className="text-xs text-green-600 font-medium">
+                  Rastreamento ativo
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

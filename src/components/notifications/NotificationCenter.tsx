@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,9 +28,9 @@ interface NotificationCenterProps {
 }
 
 export function NotificationCenter({ userId, userType }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useKV<Notification[]>('notifications', [])
+  const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', [])
   const [open, setOpen] = useState(false)
-  const [lastCheckTime, setLastCheckTime] = useKV<number>(`last-check-${userId}`, Date.now())
+  const [lastCheckTime, setLastCheckTime] = useLocalStorage<number>(`last-check-${userId}`, Date.now())
 
   const userNotifications = (notifications || [])
     .filter(n => n.userId === userId)

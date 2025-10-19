@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,8 @@ import { MapPin, Package, CurrencyDollar, Clock, CheckCircle, ChatCircle, ClockC
 import { MessagesTab } from './MessagesTab'
 import { ChatHistory } from '@/components/chat/ChatHistory'
 import { QRCodeScanner } from '@/components/delivery/QRCodeScanner'
+import { GPSInstructions } from '@/components/map/GPSInstructions'
+import { useGeolocation } from '@/hooks/use-geolocation'
 import { toast } from 'sonner'
 
 interface DashboardMotoboyProps {
@@ -17,13 +19,32 @@ interface DashboardMotoboyProps {
 }
 
 export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
-  const [registeredUsers, setRegisteredUsers] = useKV<any[]>('registered-users', [])
-  const [deliveries, setDeliveries] = useKV<any[]>('deliveries', [])
+  const [registeredUsers, setRegisteredUsers] = useLocalStorage<any[]>('registered-users', [])
+  const [deliveries, setDeliveries] = useLocalStorage<any[]>('deliveries', [])
   const [isOnline, setIsOnline] = useState(user.isOnline || false)
   const [myDeliveries, setMyDeliveries] = useState<any[]>([])
   const [activeDeliveries, setActiveDeliveries] = useState<any[]>([])
   const [completedDeliveries, setCompletedDeliveries] = useState<any[]>([])
   const [showQRScanner, setShowQRScanner] = useState(false)
+
+  // GPS em tempo real
+  const { 
+    position: gpsPosition, 
+    isTracking, 
+    startTracking, 
+    stopTracking,
+    permissionStatus 
+  } = useGeolocation(isOnline && activeDeliveries.length > 0, {
+    enableHighAccuracy: true,
+    onLocationUpdate: (location) => {
+      // Atualizar localização do usuário em tempo real
+      setRegisteredUsers((current) => 
+        (current || []).map(u => 
+          u.id === user.id ? { ...u, location } : u
+        )
+      )
+    }
+  })
 
   useEffect(() => {
     const userDeliveries = deliveries?.filter(d => d.motoboyId === user.id) || []
@@ -37,35 +58,49 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
     .filter(d => new Date(d.completedAt).toDateString() === new Date().toDateString())
     .reduce((sum, d) => sum + (d.motoboyEarning || 0), 0)
 
-  const handleOnlineToggle = (checked: boolean) => {
+  const handleOnlineToggle = async (checked: boolean) => {
     setIsOnline(checked)
-    setRegisteredUsers((current) => 
-      (current || []).map(u => 
-        u.id === user.id ? { ...u, isOnline: checked } : u
-      )
-    )
-  }
-
-  const simulateLocation = () => {
-    if (isOnline) {
-      const lat = -23.5505 + (Math.random() - 0.5) * 0.1
-      const lng = -46.6333 + (Math.random() - 0.5) * 0.1
-      
+    
+    if (checked) {
+      // Tentar ativar GPS quando ficar online
+      const success = await startTracking()
+      if (success && gpsPosition) {
+        setRegisteredUsers((current) => 
+          (current || []).map(u => 
+            u.id === user.id ? { 
+              ...u, 
+              isOnline: checked,
+              location: gpsPosition
+            } : u
+          )
+        )
+      } else {
+        setRegisteredUsers((current) => 
+          (current || []).map(u => 
+            u.id === user.id ? { ...u, isOnline: checked } : u
+          )
+        )
+      }
+    } else {
+      // Desativar GPS quando ficar offline
+      stopTracking()
       setRegisteredUsers((current) => 
         (current || []).map(u => 
-          u.id === user.id ? { ...u, location: { lat, lng } } : u
+          u.id === user.id ? { ...u, isOnline: checked } : u
         )
       )
     }
   }
 
+  // Auto-ativar GPS quando tiver entregas ativas
   useEffect(() => {
-    if (isOnline) {
-      simulateLocation()
-      const interval = setInterval(simulateLocation, 5000)
-      return () => clearInterval(interval)
+    if (isOnline && activeDeliveries.length > 0 && !isTracking) {
+      startTracking()
+    } else if (activeDeliveries.length === 0 && isTracking) {
+      // Manter GPS ativo mesmo sem entregas se estiver online
+      // Para permitir que comerciantes vejam motoboys disponíveis
     }
-  }, [isOnline])
+  }, [isOnline, activeDeliveries.length, isTracking, startTracking])
 
   const handleCompleteDelivery = (deliveryId: string) => {
     setDeliveries((current) => {
@@ -183,13 +218,64 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
         </div>
         
         {isOnline && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-green-800 font-medium">
-                Você está online e visível para comerciantes
-              </span>
+          <div className="space-y-2">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <span className="text-green-800 font-medium">
+                  Você está online e visível para comerciantes
+                </span>
+              </div>
             </div>
+            
+            {isTracking && gpsPosition && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                    <span className="text-blue-800 font-medium">
+                      GPS ativo - Localização em tempo real
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    Precisão: {gpsPosition.accuracy ? `${Math.round(gpsPosition.accuracy)}m` : 'Alta'}
+                  </Badge>
+                </div>
+                <p className="text-xs text-blue-700 mt-2">
+                  Lat: {gpsPosition.lat.toFixed(6)}, Lng: {gpsPosition.lng.toFixed(6)}
+                </p>
+              </div>
+            )}
+
+            {isOnline && !isTracking && permissionStatus === 'denied' && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-amber-600" />
+                  <div className="flex-1">
+                    <span className="text-amber-800 font-medium block">
+                      Permissão de localização negada
+                    </span>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Habilite a localização nas configurações do navegador para que os comerciantes vejam sua posição
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeDeliveries.length > 0 && isTracking && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <Package className="w-5 h-5 text-purple-600 animate-pulse" />
+                  <span className="text-purple-800 font-medium">
+                    Rastreamento ativo para {activeDeliveries.length} entrega(s)
+                  </span>
+                </div>
+                <p className="text-xs text-purple-700 mt-1">
+                  Os comerciantes estão acompanhando sua localização em tempo real
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -239,6 +325,10 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
       <Tabs defaultValue="active" className="space-y-6">
         <TabsList>
           <TabsTrigger value="active">Entregas Ativas</TabsTrigger>
+          <TabsTrigger value="gps">
+            <MapPin className="w-4 h-4 mr-2" />
+            GPS
+          </TabsTrigger>
           <TabsTrigger value="messages">
             <ChatCircle className="w-4 h-4 mr-2" />
             Mensagens
@@ -246,6 +336,13 @@ export function DashboardMotoboy({ user }: DashboardMotoboyProps) {
           <TabsTrigger value="history">Histórico</TabsTrigger>
           <TabsTrigger value="earnings">Ganhos Detalhados</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="gps">
+          <GPSInstructions 
+            permissionStatus={permissionStatus} 
+            isTracking={isTracking}
+          />
+        </TabsContent>
         <TabsContent value="active">
           <div className="space-y-4">
             {activeDeliveries.length === 0 ? (

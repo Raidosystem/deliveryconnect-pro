@@ -1,4 +1,4 @@
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 
 interface Notification {
   id: string
@@ -14,7 +14,7 @@ interface Notification {
 }
 
 export function useNotifications() {
-  const [notifications, setNotifications] = useKV<Notification[]>('notifications', [])
+  const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', [])
 
   const sendNotification = (
     userId: string,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -37,8 +37,8 @@ interface ChatHistoryProps {
 }
 
 export function ChatHistory({ currentUser, currentUserType }: ChatHistoryProps) {
-  const [messages] = useKV<Message[]>('chat-messages', [])
-  const [registeredUsers] = useKV<any[]>('registered-users', [])
+  const [messages] = useLocalStorage<Message[]>('chat-messages', [])
+  const [registeredUsers] = useLocalStorage<any[]>('registered-users', [])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all')

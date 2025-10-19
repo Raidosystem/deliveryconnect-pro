@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -13,8 +13,8 @@ interface MessagesTabProps {
 }
 
 export function MessagesTab({ currentUser, currentUserType }: MessagesTabProps) {
-  const [registeredUsers] = useKV<any[]>('registered-users', [])
-  const [messages] = useKV<any[]>('chat-messages', [])
+  const [registeredUsers] = useLocalStorage<any[]>('registered-users', [])
+  const [messages] = useLocalStorage<any[]>('chat-messages', [])
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredUsers, setFilteredUsers] = useState<any[]>([])
 

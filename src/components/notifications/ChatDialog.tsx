@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -39,7 +39,7 @@ export function ChatDialog({
   targetUserType,
   trigger
 }: ChatDialogProps) {
-  const [messages, setMessages] = useKV<Message[]>('chat-messages', [])
+  const [messages, setMessages] = useLocalStorage<Message[]>('chat-messages', [])
   const [newMessage, setNewMessage] = useState('')
   const [open, setOpen] = useState(false)
   const { sendNotification } = useNotifications()
