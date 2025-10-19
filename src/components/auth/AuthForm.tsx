@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useLocalStorage } from '@/hooks/use-local-storage'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 
 interface AuthFormProps {
@@ -10,28 +11,39 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ onLogin }: AuthFormProps) {
-  const [cnpj, setCnpj] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { signIn, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [registeredUsers] = useLocalStorage<any[]>('registered-users', [])
 
-  const handleLogin = async () => {
-    if (!cnpj.trim()) {
-      toast.error('Digite o CNPJ para fazer login')
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email.trim() || !password.trim()) {
+      toast.error('Digite o e-mail e senha para fazer login')
       return
     }
 
     setIsLoading(true)
     
-    const user = registeredUsers?.find(u => u.cnpj === cnpj.trim())
-    
-    if (user) {
-      toast.success(`Bem-vindo de volta, ${user.name}!`)
-      onLogin(user, user.type)
-    } else {
-      toast.error('CNPJ não encontrado. Faça seu cadastro primeiro.')
+    try {
+      const { user, error } = await signIn(email, password)
+      
+      if (error) {
+        toast.error(error)
+        return
+      }
+      
+      if (user) {
+        toast.success(`Bem-vindo de volta!`)
+        onLogin(user, user.role)
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('Erro ao fazer login. Tente novamente.')
+    } finally {
+      setIsLoading(false)
     }
-    
-    setIsLoading(false)
   }
 
   return (
@@ -39,26 +51,41 @@ export function AuthForm({ onLogin }: AuthFormProps) {
       <CardHeader className="text-center">
         <CardTitle>Já tem conta?</CardTitle>
         <CardDescription>
-          Faça login com seu CNPJ
+          Faça login com seu e-mail e senha
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Input
-            id="cnpj"
-            placeholder="Digite seu CNPJ"
-            value={cnpj}
-            onChange={(e) => setCnpj(e.target.value)}
-            maxLength={18}
-          />
-        </div>
-        <Button 
-          className="w-full" 
-          onClick={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Entrando...' : 'Entrar'}
-        </Button>
+      <CardContent>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Digite sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button 
+            type="submit"
+            className="w-full" 
+            disabled={isLoading || loading}
+          >
+            {isLoading || loading ? 'Entrando...' : 'Entrar'}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   )

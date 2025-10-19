@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useLocalStorage } from '@/hooks/use-local-storage'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { Storefront } from '@phosphor-icons/react'
 
@@ -18,39 +18,61 @@ export function CommerceRegistration({ onSuccess }: CommerceRegistrationProps) {
     cnpj: '',
     phone: '',
     address: '',
-    email: ''
+    email: '',
+    password: '',
+    confirmPassword: ''
   })
+  const { signUp, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [registeredUsers, setRegisteredUsers] = useLocalStorage<any[]>('registered-users', [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.businessName || !formData.cnpj) {
+    if (!formData.name || !formData.businessName || !formData.cnpj || !formData.email || !formData.password) {
       toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('As senhas não coincidem')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('A senha deve ter no mínimo 6 caracteres')
       return
     }
 
     setIsLoading(true)
 
-    const existingUser = registeredUsers?.find(u => u.cnpj === formData.cnpj)
-    if (existingUser) {
-      toast.error('CNPJ já cadastrado')
+    try {
+      const { user, error } = await signUp(
+        formData.email,
+        formData.password,
+        'commerce',
+        {
+          name: formData.businessName,
+          cnpj: formData.cnpj,
+          address: formData.address,
+          phone: formData.phone,
+        }
+      )
+
+      if (error) {
+        toast.error(error)
+        return
+      }
+
+      if (user) {
+        toast.success('Cadastro realizado com sucesso!')
+        onSuccess(user)
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      toast.error('Erro ao realizar cadastro. Tente novamente.')
+    } finally {
       setIsLoading(false)
-      return
     }
-
-    const newUser = {
-      ...formData,
-      type: 'commerce',
-      id: Date.now(),
-      createdAt: new Date().toISOString()
-    }
-
-    setRegisteredUsers((current) => [...(current || []), newUser])
-    toast.success('Cadastro realizado com sucesso!')
-    onSuccess(newUser)
-    setIsLoading(false)
   }
 
   return (
@@ -100,38 +122,67 @@ export function CommerceRegistration({ onSuccess }: CommerceRegistrationProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="phone">Telefone</Label>
+              <Label htmlFor="phone">Telefone *</Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 placeholder="(11) 99999-9999"
+                required
               />
             </div>
             <div>
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">E-mail *</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="contato@empresa.com"
+                required
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="address">Endereço Completo</Label>
+            <Label htmlFor="address">Endereço Completo *</Label>
             <Input
               id="address"
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
               placeholder="Rua, número, bairro, cidade"
+              required
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Cadastrando...' : 'Finalizar Cadastro'}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="password">Senha *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="Mínimo 6 caracteres"
+                required
+                minLength={6}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                placeholder="Digite a senha novamente"
+                required
+              />
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isLoading || loading}>
+            {isLoading || loading ? 'Cadastrando...' : 'Finalizar Cadastro'}
           </Button>
         </form>
       </CardContent>
